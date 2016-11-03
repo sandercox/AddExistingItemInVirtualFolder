@@ -39,12 +39,18 @@ namespace AddExistingItemInVirtualFolder
     [InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)] // Info on this package for Help/About
     [Guid(AddExistingItemPackage.PackageGuidString)]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "pkgdef, VS and vsixmanifest are valid VS terms")]
+    [ProvideAutoLoad("ADFC4E64-0397-11D1-9F4E-00A0C911004F")]
     public sealed class AddExistingItemPackage : Package
     {
         /// <summary>
         /// AddExistingItemPackage GUID string.
         /// </summary>
         public const string PackageGuidString = "d51c3a56-13ce-413f-8f37-be226214fe45";
+
+        private const string AddExistingItemGUID = "{5EFC7975-14BC-11CF-9B2B-00AA00573819}";
+        private const int AddExistingItemCommandID = 244;
+
+        private EnvDTE.CommandEvents commandEvents;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AddExistingItemPackage"/> class.
@@ -66,7 +72,108 @@ namespace AddExistingItemInVirtualFolder
         protected override void Initialize()
         {
             base.Initialize();
+
+            var DTE = GetService(typeof(EnvDTE.DTE)) as EnvDTE.DTE;
+            commandEvents = DTE.Events.CommandEvents;
+            commandEvents.BeforeExecute += delegate (string Guid, int ID, object CustomIn, object CustomOut, ref bool CancelDefault)
+            {
+                if (ID == AddExistingItemCommandID)
+                {
+                    if (Guid == AddExistingItemGUID)
+                    {
+                        // try to get a project item from where this command was executed
+                        var projectItem = GetSelectedItem() as EnvDTE.ProjectItem;
+
+                        if (projectItem != null && projectItem.Kind == EnvDTE.Constants.vsProjectItemKindVirtualFolder)
+                        {
+                            Debug.WriteLine($"Virtual folder item: {projectItem.Name}");
+
+                            var folder = GetPhysicalFolderForVirtualFolder(projectItem);                            
+                            if (folder != null) // we were able to determine a folder
+                            {
+                                // prepare open file dialog for any file
+                                var dlg = new System.Windows.Forms.OpenFileDialog();
+                                dlg.CheckFileExists = true;
+                                dlg.CheckPathExists = true;
+                                dlg.InitialDirectory = folder;
+                                dlg.Multiselect = true;
+                                dlg.Filter = "Any File|*.*";
+                                dlg.Title = "Add Existing Item...";
+                                
+                                if (dlg.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                                {
+                                    // if user selected one or more files add them to the project item and cancel the default action.
+                                    Debug.WriteLine($"ADD EXISTING: {dlg.FileName}");
+                                    foreach(var file in dlg.FileNames)
+                                    {
+                                        projectItem.ProjectItems.AddFromFile(file);
+                                    }
+                                    CancelDefault = true;
+                                }
+                            }
+                        }
+                    }
+                }
+            };
         }
+
+        public static object GetSelectedItem()
+        {
+            IntPtr hierarchyPointer, selectionContainerPointer;
+            object selectedObject = null;
+            IVsMultiItemSelect multiItemSelect;
+            uint itemId;
+
+            var monitorSelection = (IVsMonitorSelection)Package.GetGlobalService(typeof(SVsShellMonitorSelection));
+
+            try
+            {
+                monitorSelection.GetCurrentSelection(out hierarchyPointer,
+                                                 out itemId,
+                                                 out multiItemSelect,
+                                                 out selectionContainerPointer);
+
+                IVsHierarchy selectedHierarchy = Marshal.GetTypedObjectForIUnknown(
+                                                     hierarchyPointer,
+                                                     typeof(IVsHierarchy)) as IVsHierarchy;
+
+                if (selectedHierarchy != null)
+                {
+                    ErrorHandler.ThrowOnFailure(selectedHierarchy.GetProperty(itemId, (int)__VSHPROPID.VSHPROPID_ExtObject, out selectedObject));
+                }
+
+                Marshal.Release(hierarchyPointer);
+                Marshal.Release(selectionContainerPointer);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.Write(ex);
+            }
+
+            return selectedObject;
+        }
+        
+        private static string GetPhysicalFolderForVirtualFolder(EnvDTE.ProjectItem item)
+        {
+            string folder = null;
+
+            if (item == null)
+                return null;
+
+            var items = item.ProjectItems;
+
+            // this only searches if there is already a file in this directory - if not it will just fail to determine a path
+            foreach (EnvDTE.ProjectItem it in items)
+            {
+                if (System.IO.File.Exists(it.FileNames[1]))
+                {
+                    folder = System.IO.Path.GetDirectoryName(it.FileNames[1]);
+                    break;
+                }
+            }
+            return folder;
+        }
+        
 
         #endregion
     }
