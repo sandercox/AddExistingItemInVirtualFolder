@@ -1,12 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
   <Metadata>
-    <Identity Id="AddExistingItemInVirtualFolder.Sander Cox.6eb67602-1ce0-4a6f-82d4-9d6ccc2b6d72" Version="1.0" Language="en-US" Publisher="Sander Cox" />
+    <Identity Id="AddExistingItemInVirtualFolder.SanderCox.6eb67602-1ce0-4a6f-82d4-9d6ccc2b6d72" Version="1.0" Language="en-US" Publisher="Sander Cox" />
     <DisplayName>AddExistingItemInVirtualFolder</DisplayName>
-    <Description>Empty VSIX Project.</Description>
+    <Description xml:space="preserve">Add Existing Item command hijacking for project filter folders. Try to obtain good working directory and show dialog there instead of at default location.</Description>
+    <License>LICENSE</License>
   </Metadata>
   <Installation>
-    <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[14.0]" />
+    <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[12.0,)" />
   </Installation>
   <Dependencies>
     <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="[4.5,)" />
