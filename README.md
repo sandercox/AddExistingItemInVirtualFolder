@@ -4,7 +4,7 @@
 [![Build status](https://ci.appveyor.com/api/projects/status/u3u89ivwx4urari3?svg=true)](https://ci.appveyor.com/project/sandercox/AddExistingItemInVirtualFolder)
 
 <!-- Update the VS Gallery link after you upload the VSIX-->
-or get the [CI build](http://vsixgallery.com/extension/AddExistingItemInVirtualFolder.SanderCox.6eb67602-1ce0-4a6f-82d4-9d6ccc2b6d72/).
+Get the [CI build](http://vsixgallery.com/extension/AddExistingItemInVirtualFolder.SanderCox.6eb67602-1ce0-4a6f-82d4-9d6ccc2b6d72/).
 
 ---------------------------------------
 
