@@ -153,10 +153,8 @@ namespace AddExistingItemInVirtualFolder
             return selectedObject;
         }
         
-        private static string GetPhysicalFolderForVirtualFolder(EnvDTE.ProjectItem item)
+        private static string GetPhysicalFolderForVirtualFolder(EnvDTE.ProjectItem item, bool exploreSubFolders = true)
         {
-            string folder = null;
-
             if (item == null)
                 return null;
 
@@ -167,11 +165,46 @@ namespace AddExistingItemInVirtualFolder
             {
                 if (System.IO.File.Exists(it.FileNames[1]))
                 {
-                    folder = System.IO.Path.GetDirectoryName(it.FileNames[1]);
-                    break;
+                    return System.IO.Path.GetDirectoryName(it.FileNames[1]);
                 }
             }
-            return folder;
+
+            if (exploreSubFolders)
+            {
+                // try to find sub virtual folder that have files in them
+                foreach (EnvDTE.ProjectItem it in items)
+                {
+                    if (it.Kind == EnvDTE.Constants.vsProjectItemKindVirtualFolder)
+                    {
+                        var folder = GetPhysicalFolderForVirtualFolder(it);
+
+                        if (folder != null)
+                        {
+                            var parent = System.IO.Directory.GetParent(folder);
+                            if (parent.Name == item.Name)
+                            {
+                                return parent.FullName;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // still no path try to search upward in the tree
+            var folderParent = item.Collection?.Parent as EnvDTE.ProjectItem;
+            if (folderParent != null && folderParent.Kind == EnvDTE.Constants.vsProjectItemKindVirtualFolder)
+            {
+                var folder = GetPhysicalFolderForVirtualFolder(folderParent, false);
+
+                if (folder != null)
+                {
+                    var newFolder = System.IO.Path.Combine(folder, item.Name);
+                    if (System.IO.Directory.Exists(newFolder))
+                        return newFolder;
+                }
+            }
+
+            return null;
         }
         
 
