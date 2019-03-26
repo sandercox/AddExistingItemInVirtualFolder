@@ -69,11 +69,11 @@ namespace AddExistingItemInVirtualFolder
         /// Initialization of the package; this method is called right after the package is sited, so this is the place
         /// where you can put all the initialization code that rely on services provided by VisualStudio.
         /// </summary>
-        protected override void Initialize()
+        protected override aync Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
         {
-            base.Initialize();
+            await base.InitializeAync(cancellationToken, progress);
 
-            var DTE = GetService(typeof(EnvDTE.DTE)) as EnvDTE.DTE;
+            var DTE = await GetServiceAsync(typeof(EnvDTE.DTE)) as EnvDTE.DTE;
             commandEvents = DTE.Events.CommandEvents;
             commandEvents.BeforeExecute += delegate (string Guid, int ID, object CustomIn, object CustomOut, ref bool CancelDefault)
             {
