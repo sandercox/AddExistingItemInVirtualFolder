@@ -43,7 +43,7 @@ namespace AddExistingItemInVirtualFolder
     [Guid(AddExistingItemPackage.PackageGuidString)]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "pkgdef, VS and vsixmanifest are valid VS terms")]
     [ProvideAutoLoad(VSConstants.UICONTEXT.SolutionExistsAndFullyLoaded_string, PackageAutoLoadFlags.BackgroundLoad)]
-    public sealed class AddExistingItemPackage : AsyncPackage
+    public sealed class AddExistingItemPackage : Microsoft.VisualStudio.Shell.AsyncPackage
     {
         /// <summary>
         /// AddExistingItemPackage GUID string.
@@ -74,7 +74,7 @@ namespace AddExistingItemInVirtualFolder
         /// </summary>
         protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
         {
-            await base.InitializeAync(cancellationToken, progress);
+            await base.InitializeAsync(cancellationToken, progress);
 
             var DTE = await GetServiceAsync(typeof(EnvDTE.DTE)) as EnvDTE.DTE;
             commandEvents = DTE.Events.CommandEvents;
